@@ -2,135 +2,146 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Проверка текста — зелёный/красный</title>
+  <title>Проверка текста — зелёный / красный</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #0f0f1a;
-      color: #e0e0ff;
-      padding: 30px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    h1 { text-align: center; color: #88ff88; }
-
-    .text {
-      font-size: 1.4rem;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #111;
+      margin: 0;
+      padding: 40px;
       line-height: 1.6;
-      background: #1a1a2e;
-      padding: 20px;
-      border-radius: 10px;
-      white-space: pre-wrap;
-      user-select: none;
     }
 
-    .char {
-      position: relative;
-      padding: 1px 0;
-    }
-
-    .correct  { color: #55ff55; }
-    .wrong    { color: #ff5555; background: rgba(255,80,80,0.15); }
-    .current  {
-      background: #ffff0055;
-      border-bottom: 3px solid #ffff00;
-    }
-
-    #input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
+    h1 {
+      color: #006600;
+      text-align: center;
+      margin-bottom: 30px;
     }
 
     .container {
-      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .text {
+      font-size: 1.5rem;
+      background: #f8f9fa;
+      padding: 25px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      margin-bottom: 20px;
+    }
+
+    .char {
+      padding: 1px 0;
+    }
+
+    .correct  { color: #006600; font-weight: 500; }
+    .wrong    { color: #cc0000; background: #ffecec; }
+    .current  {
+      background: #ffff99;
+      border-bottom: 3px solid #ffcc00;
+    }
+
+    #input {
+      width: 100%;
+      font-size: 1.4rem;
+      padding: 12px 16px;
+      border: 2px solid #aaa;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    #input:focus {
+      outline: none;
+      border-color: #006600;
+      box-shadow: 0 0 0 3px rgba(0, 102, 0, 0.15);
     }
 
     .info {
-      margin-top: 20px;
       text-align: center;
+      color: #555;
+      margin-top: 20px;
       font-size: 1.1rem;
     }
   </style>
 </head>
 <body>
 
-<h1>Пиши правильно — зелёным, ошибки — красным</h1>
-
 <div class="container">
-  <div class="text" id="text"></div>
-  <input id="input" autofocus autocomplete="off" spellcheck="false" />
-</div>
 
-<div class="info">
-  Начинай печатать прямо сейчас (фокус автоматически на поле ввода)
+  <h1>Пиши правильно — зелёным, ошибки — красным</h1>
+
+  <div class="text" id="text"></div>
+
+  <textarea id="input" rows="3" autofocus placeholder="Начинай печатать здесь..."></textarea>
+
+  <div class="info">
+    Просто начни печатать — буквы будут подсвечиваться автоматически
+  </div>
+
 </div>
 
 <script>
-// Текст, который нужно набрать (можно менять)
+// Текст для набора (можно менять)
 const originalText = `Съешь же ещё этих мягких французских булок, да выпей чаю.
 Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства.
 Всё это — лишь малая часть примеров использования ё в русском языке.`;
 
-// Разбиваем текст на символы и оборачиваем в <span>
+// Инициализация текста
 function init() {
   const textEl = document.getElementById("text");
   textEl.innerHTML = "";
 
-  originalText.split("").forEach((char, i) => {
+  originalText.split("").forEach(char => {
     const span = document.createElement("span");
     span.classList.add("char");
     span.textContent = char;
-    span.dataset.index = i;
     textEl.appendChild(span);
   });
 }
 
-let currentIndex = 0;
-
-function handleInput(e) {
-  const input = e.target.value;
+function handleInput() {
+  const input = document.getElementById("input").value;
   const spans = document.querySelectorAll(".char");
 
-  // Сбрасываем все предыдущие стили
+  // Сбрасываем стили
   spans.forEach(s => {
     s.classList.remove("correct", "wrong", "current");
   });
 
-  // Проходим по всем введённым символам
-  for (let i = 0; i < input.length; i++) {
-    if (i >= spans.length) break;
-
+  let i = 0;
+  for (; i < input.length && i < spans.length; i++) {
     const expected = originalText[i];
-    const typed    = input[i];
+    const typed = input[i];
 
     if (typed === expected) {
       spans[i].classList.add("correct");
     } else {
       spans[i].classList.add("wrong");
     }
-
-    currentIndex = i + 1;
   }
 
-  // Подсвечиваем текущий символ (куда дальше печатать)
-  if (currentIndex < spans.length) {
-    spans[currentIndex].classList.add("current");
-  }
-
-  // Если ввели больше, чем нужно — можно обрезать
-  if (input.length > originalText.length) {
-    e.target.value = input.slice(0, originalText.length);
+  // Подсвечиваем следующий символ
+  if (i < spans.length) {
+    spans[i].classList.add("current");
   }
 }
 
-// Запускаем
+// Запуск
 init();
-document.getElementById("input").addEventListener("input", handleInput);
 
-// Фокус на поле ввода при загрузке страницы
+// События ввода
+const inputEl = document.getElementById("input");
+inputEl.addEventListener("input", handleInput);
+inputEl.addEventListener("focus", handleInput); // на случай, если фокус вернётся
+
+// Фокус при загрузке
 window.addEventListener("load", () => {
-  document.getElementById("input").focus();
+  inputEl.focus();
 });
 </script>
 
