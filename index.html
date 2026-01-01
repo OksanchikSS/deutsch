@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Проверка текста — зелёный/красный</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f0f1a;
+      color: #e0e0ff;
+      padding: 30px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { text-align: center; color: #88ff88; }
+
+    .text {
+      font-size: 1.4rem;
+      line-height: 1.6;
+      background: #1a1a2e;
+      padding: 20px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      user-select: none;
+    }
+
+    .char {
+      position: relative;
+      padding: 1px 0;
+    }
+
+    .correct  { color: #55ff55; }
+    .wrong    { color: #ff5555; background: rgba(255,80,80,0.15); }
+    .current  {
+      background: #ffff0055;
+      border-bottom: 3px solid #ffff00;
+    }
+
+    #input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+    }
+
+    .info {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Пиши правильно — зелёным, ошибки — красным</h1>
+
+<div class="container">
+  <div class="text" id="text"></div>
+  <input id="input" autofocus autocomplete="off" spellcheck="false" />
+</div>
+
+<div class="info">
+  Начинай печатать прямо сейчас (фокус автоматически на поле ввода)
+</div>
+
+<script>
+// Текст, который нужно набрать (можно менять)
+const originalText = `Съешь же ещё этих мягких французских булок, да выпей чаю.
+Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства.
+Всё это — лишь малая часть примеров использования ё в русском языке.`;
+
+// Разбиваем текст на символы и оборачиваем в <span>
+function init() {
+  const textEl = document.getElementById("text");
+  textEl.innerHTML = "";
+
+  originalText.split("").forEach((char, i) => {
+    const span = document.createElement("span");
+    span.classList.add("char");
+    span.textContent = char;
+    span.dataset.index = i;
+    textEl.appendChild(span);
+  });
+}
+
+let currentIndex = 0;
+
+function handleInput(e) {
+  const input = e.target.value;
+  const spans = document.querySelectorAll(".char");
+
+  // Сбрасываем все предыдущие стили
+  spans.forEach(s => {
+    s.classList.remove("correct", "wrong", "current");
+  });
+
+  // Проходим по всем введённым символам
+  for (let i = 0; i < input.length; i++) {
+    if (i >= spans.length) break;
+
+    const expected = originalText[i];
+    const typed    = input[i];
+
+    if (typed === expected) {
+      spans[i].classList.add("correct");
+    } else {
+      spans[i].classList.add("wrong");
+    }
+
+    currentIndex = i + 1;
+  }
+
+  // Подсвечиваем текущий символ (куда дальше печатать)
+  if (currentIndex < spans.length) {
+    spans[currentIndex].classList.add("current");
+  }
+
+  // Если ввели больше, чем нужно — можно обрезать
+  if (input.length > originalText.length) {
+    e.target.value = input.slice(0, originalText.length);
+  }
+}
+
+// Запускаем
+init();
+document.getElementById("input").addEventListener("input", handleInput);
+
+// Фокус на поле ввода при загрузке страницы
+window.addEventListener("load", () => {
+  document.getElementById("input").focus();
+});
+</script>
+
+</body>
+</html>
